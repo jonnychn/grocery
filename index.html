@@ -3,47 +3,76 @@
 <head>
   <meta charset="UTF-8" />
   <title>Grocery Unit Pricing Calculator</title>
+  
+  <!-- 
+    1) Viewport meta tag for responsiveness on mobile
+    2) "maximum-scale=1.0" helps prevent zoom on some mobile browsers
+  -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+
   <style>
     /* ===============================
        Basic Styling (Embedded CSS)
        =============================== */
+    :root {
+      --primary-color: #007BFF;
+      --font-family: Arial, sans-serif;
+      --bg-color: #f7f7f7;
+      --text-color: #333;
+      --box-bg: #fff;
+      --box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+      --border-radius: 6px;
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-      background: #f7f7f7;
+      font-family: var(--font-family);
+      margin: 0;
+      padding: 20px;
+      background: var(--bg-color);
+      color: var(--text-color);
     }
 
     h1, h2 {
       text-align: center;
+      margin-top: 0;
     }
 
     .calculator-container {
       max-width: 600px;
       margin: 0 auto;
-      background: #fff;
+      background: var(--box-bg);
       padding: 20px;
-      border-radius: 6px;
-      box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
     }
 
     .input-group {
       display: flex;
-      flex-direction: row;
-      align-items: center;
-      justify-content: space-between;
+      flex-direction: column;
       margin: 10px 0;
     }
 
     .input-group label {
-      flex: 1;
-      margin-right: 10px;
+      margin-bottom: 6px;
+      font-weight: bold;
     }
 
     .input-group input,
     .input-group select {
-      flex: 2;
-      padding: 8px;
-      margin-right: 5px;
+      padding: 10px;
+      font-size: 16px; /* Prevent iOS auto zoom */
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .input-group select {
+      cursor: pointer;
+    }
+
+    .price-result {
+      font-weight: bold;
+      color: #2c3e50;
+      margin-left: 4px;
     }
 
     /* Comparison Table */
@@ -57,35 +86,56 @@
       border: 1px solid #ccc;
       padding: 8px;
       text-align: left;
+      font-size: 16px; /* Consistent font size for mobile */
     }
 
     th {
       background-color: #f0f0f0;
+      font-weight: bold;
     }
 
+    /* Compare Controls */
     .compare-controls {
       margin-top: 20px;
       display: flex;
-      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
       align-items: center;
     }
 
-    .btn {
-      padding: 8px 12px;
-      background-color: #007BFF;
+    .compare-controls .btn {
+      padding: 10px 16px;
+      background-color: var(--primary-color);
       border: none;
       border-radius: 4px;
       color: #fff;
+      font-size: 16px;
       cursor: pointer;
     }
 
-    .btn:hover {
+    .compare-controls .btn:hover {
       background-color: #0056b3;
     }
 
-    .price-result {
+    .compare-controls label {
       font-weight: bold;
-      color: #2c3e50;
+      margin-right: 6px;
+    }
+
+    /* Make sure content doesn't overflow on small screens */
+    @media (max-width: 600px) {
+      .calculator-container {
+        padding: 10px;
+      }
+
+      .input-group {
+        margin: 5px 0;
+      }
+
+      .compare-controls {
+        flex-direction: column;
+        align-items: flex-start;
+      }
     }
   </style>
 </head>
@@ -95,11 +145,11 @@
     <!-- Single Item Price Calculation -->
     <h2>Single Item Calculation</h2>
     <div class="input-group">
-      <label for="singlePrice">Price ($):</label>
+      <label for="singlePrice">Price ($)</label>
       <input type="number" step="0.01" id="singlePrice" placeholder="e.g. 10" />
     </div>
     <div class="input-group">
-      <label for="singleWeight">Weight:</label>
+      <label for="singleWeight">Weight</label>
       <input type="number" step="0.01" id="singleWeight" placeholder="e.g. 2" />
       <select id="singleUnit">
         <option value="lb">Pound (lb)</option>
@@ -109,7 +159,7 @@
       </select>
     </div>
     <div class="input-group">
-      <label for="desiredUnit">Desired Unit:</label>
+      <label for="desiredUnit">Desired Unit</label>
       <select id="desiredUnit">
         <option value="lb">Pound (lb)</option>
         <option value="oz">Ounce (oz)</option>
@@ -118,22 +168,22 @@
       </select>
     </div>
     <div class="input-group">
-      <label>Price per <span id="desiredLabel">lb</span>:</label>
+      <label>Price per <span id="desiredLabel">lb</span></label>
       <span id="unitPrice" class="price-result">$0.00</span>
     </div>
 
     <!-- Comparison Feature -->
     <h2>Compare Multiple Products</h2>
     <div class="input-group">
-      <label for="productName">Name:</label>
+      <label for="productName">Product Name</label>
       <input type="text" id="productName" placeholder="e.g. Chicken Breast" />
     </div>
     <div class="input-group">
-      <label for="comparePrice">Price ($):</label>
+      <label for="comparePrice">Price ($)</label>
       <input type="number" step="0.01" id="comparePrice" placeholder="e.g. 15" />
     </div>
     <div class="input-group">
-      <label for="compareWeight">Weight:</label>
+      <label for="compareWeight">Weight</label>
       <input type="number" step="0.01" id="compareWeight" placeholder="e.g. 5" />
       <select id="compareUnit">
         <option value="lb">Pound (lb)</option>
@@ -180,7 +230,9 @@
      * Convert any weight to ounces as a base unit.
      * (You can change 'oz' to 'g' if you prefer grams as your internal base.)
      * 1 lb = 16 oz
-     * 1 kg = 1000 g ≈ 35.274 oz
+     * 1 oz = 1 oz
+     * 1 g  ~ 0.035274 oz
+     * 1 kg ~ 35.274 oz
      */
     function convertToOunces(weight, unit) {
       switch (unit) {
@@ -308,7 +360,7 @@
 
       const desiredUnit = comparisonDesiredUnit.value;
 
-      products.forEach((product, index) => {
+      products.forEach(product => {
         const { name, price, weight, unit } = product;
         const pricePerUnit = calcPricePerUnit(price, weight, unit, desiredUnit);
 
