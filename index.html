@@ -4,10 +4,7 @@
   <meta charset="UTF-8" />
   <title>Grocery Unit Pricing Calculator</title>
   
-  <!-- 
-    1) Viewport meta tag for responsiveness on mobile
-    2) "maximum-scale=1.0" helps prevent zoom on some mobile browsers
-  -->
+  <!-- For Mobile Responsiveness -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
 
   <style>
@@ -158,6 +155,10 @@
         <option value="kg">Kilogram (kg)</option>
       </select>
     </div>
+    <!-- 
+      The 'Desired Unit' still exists but we will auto-set it whenever the 
+      user picks the singleUnit. 
+    -->
     <div class="input-group">
       <label for="desiredUnit">Desired Unit</label>
       <select id="desiredUnit">
@@ -193,6 +194,10 @@
       </select>
     </div>
 
+    <!-- 
+      We'll auto-set the "Compare by Unit" to match the "compareUnit" 
+      whenever the user changes that dropdown. 
+    -->
     <div class="compare-controls">
       <button class="btn" id="addProductBtn">Add to Comparison</button>
       <div>
@@ -315,8 +320,14 @@
       unitPriceDisplay.textContent = formatCurrency(pricePerUnit);
     }
 
-    // Attach event listeners for real-time update
-    [singlePriceInput, singleWeightInput, singleUnitSelect, desiredUnitSelect]
+    // Auto-sync the "Desired Unit" when the user changes the singleUnit
+    singleUnitSelect.addEventListener('change', () => {
+      desiredUnitSelect.value = singleUnitSelect.value;
+      updateSingleItemCalculation();
+    });
+
+    // Recalculate when user changes anything else
+    [singlePriceInput, singleWeightInput, desiredUnitSelect]
       .forEach(el => el.addEventListener('input', updateSingleItemCalculation));
 
     // =============================================
@@ -328,9 +339,16 @@
     const compareUnitSelect      = document.getElementById('compareUnit');
     const addProductBtn          = document.getElementById('addProductBtn');
     const comparisonDesiredUnit  = document.getElementById('comparisonDesiredUnit');
-    const comparisonTable        = document.getElementById('comparisonTable').getElementsByTagName('tbody')[0];
+    const comparisonTable        = document.getElementById('comparisonTable')
+                                          .getElementsByTagName('tbody')[0];
 
     let products = []; // store { name, price, weight, unit }
+
+    // Sync the "Compare by Unit" with the selected unit in the "Compare Multiple Products" section
+    compareUnitSelect.addEventListener('change', () => {
+      comparisonDesiredUnit.value = compareUnitSelect.value;
+      renderComparisonTable();
+    });
 
     // When the user adds a product to compare
     addProductBtn.addEventListener('click', () => {
